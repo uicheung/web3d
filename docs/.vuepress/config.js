@@ -1,5 +1,9 @@
 import { defaultTheme } from 'vuepress'
- 
+import navbar  from './config/navbar'
+import sidebar  from './config/sidebar'
+import { registerComponentsPlugin } from '@vuepress/plugin-register-components'
+import { path } from '@vuepress/utils'
+
 module.exports = {
   title: 'm-baseui',
   description: 'm-baseui Component library with Vue3',
@@ -11,7 +15,12 @@ module.exports = {
   },
   theme: defaultTheme({
     // 在这里进行配置
-    navbar: [],
-    sidebar: []
-  })
+    navbar,
+    sidebar
+  }),
+  plugins: [
+    registerComponentsPlugin({
+      componentsDir: path.resolve(__dirname, './components'),
+    })
+  ]
 }
