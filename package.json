@@ -17,6 +17,7 @@
     "vue": "^3.2.36",
     "vue-loader": "^17.0.1",
     "vuepress": "^2.0.0-beta.60",
+    "vuepress-plugin-anchor-right": "^0.0.1-beta.7",
     "webpack": "^5.75.0",
     "webpack-cli": "^5.0.1",
     "webpack-dev-server": "^4.11.1",
@@ -30,9 +31,12 @@
     "serve:react": "npx webpack serve --merge -c ./webpack.config.js -c ./webpack.react.js"
   },
   "dependencies": {
+    "@react-three/drei": "^9.53.0",
+    "@react-three/fiber": "^8.10.0",
     "dat.gui": "^0.7.9",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-router-dom": "^6.6.2",
     "three": "^0.148.0"
   }
 }
