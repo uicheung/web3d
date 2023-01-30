@@ -5,7 +5,7 @@ heroText: 基于Vue3的轻量级UI组件库
 tagline: 更小的体积，更快的响应，更强的拓展性
 actions:
   - text: 快速上手 →
-    link: /componentDocs/Install
+    link: componentDocs/getting-started/Introduction.html
     type: primary
 features:
 - title: 简洁至上

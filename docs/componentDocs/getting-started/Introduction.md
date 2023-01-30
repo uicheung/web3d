@@ -1,3 +1,9 @@
+---
+title: 介绍
+description: React-three-fiber是基于three.js的react渲染器.
+nav: 0
+---
+
 
 # 介绍
 React-three-fiber 是一个基于three.js的React渲染器
@@ -12,7 +18,7 @@ npm install three @types/three @react-three/fiber
 不，没有开销。组件在React外部渲染。由于Reacts的调度能力，它在规模上优于Threejs。
 
 ## 它能跟上Threejs的频繁功能更新吗？
-对，它只在JSX中表达Threejs，＜mesh/＞动态地转换为新的THREE.mesh（）。
+对，它只在JSX中表达Threejs，`＜mesh/＞`动态地转换为`new THREE.mesh()`。
 如果新的Threejs版本添加、删除或更改了功能，它将立即提供给您，而不依赖于此库的更新。
 
 ## 举个例子？
@@ -44,14 +50,14 @@ import React, { useRef, useState } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
 
 function Box(props) {
-  // This reference will give us direct access to the mesh
+  // 该引用可以使我们能够直接访问网格对象
   const mesh = useRef()
-  // Set up state for the hovered and active state
+  // 为悬停和活动状态设置状态
   const [hovered, setHover] = useState(false)
   const [active, setActive] = useState(false)
-  // Subscribe this component to the render-loop, rotate the mesh every frame
+  // 将该组件订阅到渲染循环，每帧旋转网格
   useFrame((state, delta) => (mesh.current.rotation.x += delta))
-  // Return view, these are regular three.js elements expressed in JSX
+  // 返回视图,用JSX来表示常规的three.js元素
   return (
     <mesh
       {...props}

@@ -19,5 +19,30 @@ module.exports = [
           link: '/componentDocs/getting-started/Examples'
         }
       ]
-    }
+    },
+    {
+      text: 'API',
+      children: [
+        {
+          text: 'Canvas',
+          link: '/componentDocs/API/canvas.md'
+        },
+        {
+          text: '对象，属性，构造参数',
+          link: '/componentDocs/getting-started/Installation'
+        },
+        {
+          text: 'Hooks',
+          link: '/componentDocs/getting-started/YourFirstScene'
+        },
+        {
+          text: 'Events',
+          link: '/componentDocs/getting-started/Examples'
+        },
+        {
+          text: '其他导出的参数',
+          link: '/componentDocs/getting-started/Examples'
+        }
+      ]
+    } 
   ]
