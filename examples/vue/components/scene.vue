@@ -24,7 +24,7 @@ onMounted(()=>{
   // document.querySelector('.dg').setAttribute('style',"width: 245px;z-index:300")
   const box = document.querySelector('#guiBox');
 // console.log(box);
-box.appendChild(gui.domElement)
+  box.appendChild(gui.domElement)
 })
 
 </script>
