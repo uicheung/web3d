@@ -1,8 +1,13 @@
 
-const nodeExternals = require('webpack-node-externals');
 module.exports = {
   mode: "development",
   devtool: false,
+  resolve: {
+    alias: {
+
+    },
+  },
+
   devServer: {
     hot: true,
     open: true,

@@ -5,6 +5,7 @@
     <div class="scene" ref="sceneBox"></div>
   </div>
 </template>
+
 <script setup>
 
 import { onMounted ,ref} from 'vue';
