@@ -1,6 +1,7 @@
 <template>
   <div class="scene" ref="sceneBox"></div>
 </template>
+
 <script setup>
 import { onMounted ,ref} from 'vue';
 import initRender from '../base/init'

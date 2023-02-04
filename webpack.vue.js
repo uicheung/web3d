@@ -16,6 +16,7 @@ module.exports = {
   module: {
     rules: [
       { test: /\.vue$/, use: ["vue-loader"] },
+      // { test: /\.ts$/, use: ["ts-loader"] ,},
     ],
   },
   plugins: [
