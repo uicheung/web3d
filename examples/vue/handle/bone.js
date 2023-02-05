@@ -1,215 +1,185 @@
-import * as THREE from 'three'
-import scene from '../base/scene'
-import gui from '../base/gui'
-import * as BufferGeometryUtils  from 'three/examples/jsm/utils/BufferGeometryUtils.js';
+import {
+  Bone,
+  Color,
+  CylinderGeometry,
+  DoubleSide,
+  Float32BufferAttribute,
+  MeshPhongMaterial,
+  PerspectiveCamera,
+  PointLight,
+  Scene,
+  SkinnedMesh,
+  Skeleton,
+  SkeletonHelper,
+  Vector3,
+  Uint16BufferAttribute,
+  WebGLRenderer,
+} from "three";
 
-function bone(){
+import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+import scene from "../base/scene";
+// import gui from '../base/gui'
+import { GUI } from "three/addons/libs/lil-gui.module.min.js";
+let camera, renderer, orbit, lights, mesh, bones, skeletonHelper;
+const state = {
+  animateBones: false,
+};
+const skinIndices = [];
+const skinWeights = [];
 
+const sizing = {
+  segmentHeight: 8,
+  segmentCount: 8,
+  height: 8,
+  halfHeight: 4,
+};
+function createGeometry() {
+  const geometry = new CylinderGeometry(
+    2, // radiusTop
+    2, // radiusBottom
+    sizing.height, // height
+    3, // radiusSegments
+    sizing.segmentCount * 3, // heightSegments
+    true // openEnded
+  );
 
-    // 1. 创建一个BufferGeometry，并添加skinIndex和skinWeight两个属性。
-    let head = new THREE.SphereGeometry(3, 60, 40);
-    let eye_l = new THREE.BoxGeometry(2, 1, 1);
-    // eye_l.translate(2, 1, 1)
-    eye_l.applyMatrix4(new THREE.Matrix4().makeTranslation(10, 1, 1))
+  const position = geometry.attributes.position;
+  const vertex = new Vector3();
 
-    console.log(new THREE.Matrix4().makeTranslation(2, 1, 1));
-    console.log(eye_l);
-
-    console.log(head);
-    let eye_r = new THREE.BoxGeometry(2, 1, 1);
-    let mouth = new THREE.BoxGeometry(2, 0.4, 1);
-    // head.merge(eye_l, new THREE.Matrix4().makeTranslation(2, 1, 1))
-    // head.merge(eye_r, new THREE.Matrix4().makeTranslation(2, 1, -1))
-    // head.merge(mouth, new THREE.Matrix4().makeTranslation(2, -1, 0))
-
-    const headGeometries = BufferGeometryUtils.mergeBufferGeometries([head,eye_l,eye_r,mouth], false);
-    
-    let body = new THREE.BoxGeometry(5, 10, 8, 1, 20, 1);
-    let leg_l = new THREE.CylinderGeometry(2, 2, 14, 8, 14);
-    let leg_r = new THREE.CylinderGeometry(2, 2, 14, 8, 14);
-    let arm_l = new THREE.CylinderGeometry(1, 1, 12, 8, 11);
-    let arm_r = new THREE.CylinderGeometry(1, 1, 12, 8, 11);
-    let human = body.clone();
-    
-    // human.merge(head, new THREE.Matrix4().makeTranslation(0, 8, 0));
-    // human.merge(leg_l, new THREE.Matrix4().makeTranslation(0, -12, 2.1));
-    // human.merge(leg_r, new THREE.Matrix4().makeTranslation(0, -12, -2.1));
-    // human.merge(arm_l, new THREE.Matrix4().makeTranslation(0, -1, 5.3));
-    // human.merge(arm_r, new THREE.Matrix4().makeTranslation(0, -1, -5.3));
-
-    const mergedGeometries = BufferGeometryUtils.mergeBufferGeometries([headGeometries,body,leg_l,leg_r,arm_l,arm_r], false);
-    
-    var skinIndices = [];
-    var skinWeights = [];
-    let position = human.attributes.position;
-    var vertex = new THREE.Vector3();
- 
-for(let i=0; i<position.count; i++) {
+  for (let i = 0; i < position.count; i++) {
     vertex.fromBufferAttribute(position, i);
-    if(vertex.z > 4.3 && vertex.y >= 0) {
-        skinIndices.push(9,0,0,0);
-        skinWeights.push(1,0,0,0);
-    } else if (vertex.z < -4.3 && vertex.y >= 0) {
-        skinIndices.push(10,0,0,0);
-        skinWeights.push(1,0,0,0);
-    } else if (vertex.z > 4.3 && vertex.y < 0) {
-        skinIndices.push(11,0,0,0);
-        skinWeights.push(1,0,0,0);
-    } else if (vertex.z < -4.3 && vertex.y < 0) {
-        skinIndices.push(12,0,0,0);
-        skinWeights.push(1,0,0,0);
-    } else if (vertex.y <= 5 && vertex.y >= -5) {
-        let w = (vertex.y + 5) / 10;
-        skinIndices.push(0,2,0,0);
-        skinWeights.push(Math.sqrt(w),1-Math.sqrt(w),0,0);
-    } else if (vertex.y > 5) {
-        skinIndices.push(1,0,0,0);
-        skinWeights.push(1,0,0,0);
-    } else if(vertex.y < -5 && vertex.y >= -12 && vertex.z > 0) {
-        skinIndices.push(3,0,0,0);
-        skinWeights.push(1,0,0,0);
-    } else if (vertex.y < -12 && vertex.z > 0) {
-        skinIndices.push(5,0,0,0);
-        skinWeights.push(1,0,0,0);
-    } else if (vertex.y < -5 && vertex.y >= -12 && vertex.z < 0) {
-        skinIndices.push(4,0,0,0);
-        skinWeights.push(1,0,0,0);
-    } else {
-        skinIndices.push(6,0,0,0);
-        skinWeights.push(1,0,0,0);
-    }
-}
- 
-human.setAttribute('skinIndex', new THREE.Uint16BufferAttribute(skinIndices, 4));
-human.setAttribute('skinWeight', new THREE.Float32BufferAttribute(skinWeights, 4));
 
+    const y = vertex.y + sizing.halfHeight;
 
+    const skinIndex = Math.floor(y / sizing.segmentHeight);
+    const skinWeight = (y % sizing.segmentHeight) / sizing.segmentHeight;
 
-//  2. 创建骨骼Bone
+    skinIndices.push(skinIndex, skinIndex + 1, 0, 0);
+    skinWeights.push(1 - skinWeight, skinWeight, 0, 0);
+  }
+  geometry.setAttribute("skinIndex", new Uint16BufferAttribute(skinIndices, 4));
+  geometry.setAttribute(
+    "skinWeight",
+    new Float32BufferAttribute(skinWeights, 4)
+  );
 
-    let bones = [];
-    let bone1 = new THREE.Bone(); //胸
-    bone1.position.y = 5;
-    let bone2 = new THREE.Bone(); //头
-    bone2.position.y = 3;
-    let bone3 = new THREE.Bone(); //尾椎
-    bone3.position.y = -10;
-     
-    let bone4 = new THREE.Bone(); //左腿上
-    bone4.position.y = -0.1;
-    bone4.position.z = 2.1;
-    let bone5 = new THREE.Bone(); //右腿上
-    bone5.position.y = -0.1;
-    bone5.position.z = -2.1;
-    let bone6 = new THREE.Bone(); //左腿中
-    bone6.position.y = -7;
-    let bone7 = new THREE.Bone(); //右腿中
-    bone7.position.y = -7;
-    let bone8 = new THREE.Bone(); //左腿下
-    bone8.position.y = -7;
-    let bone9 = new THREE.Bone(); //右腿下
-    bone9.position.y = -7;
-     
-    let bone10 = new THREE.Bone(); //左臂上
-    bone10.position.z = 5.3;
-    let bone11 = new THREE.Bone(); //右臂上
-    bone11.position.z = -5.3;
-    let bone12 = new THREE.Bone(); //左臂中
-    bone12.position.y = -6;
-    let bone13 = new THREE.Bone(); //右臂中
-    bone13.position.y = -6;
-    let bone14 = new THREE.Bone(); //左臂下
-    bone14.position.y = -6;
-    let bone15 = new THREE.Bone(); //右臂下
-    bone15.position.y = -6;
-     
-    // 胸 添加 
-    bone1.add(bone2);// 头
-    bone1.add(bone3);// 尾椎
-    bone1.add(bone10)//左臂上
-    bone1.add(bone11)//右臂上
-     
-    // 尾椎添加
-    bone3.add(bone4);// 右腿上
-    bone3.add(bone5);// 左腿上
-     
-    bone4.add(bone6);// 右腿上 添加右腿中
-    bone5.add(bone7);
-    bone6.add(bone8);
-    bone7.add(bone9);
-    bone10.add(bone12)
-    bone11.add(bone13)
-    bone12.add(bone14)
-    bone13.add(bone15)
-     
-    bones.push(bone1); // 胸，头，尾椎，左臂上，右臂上
-    bones.push(bone2);
-    bones.push(bone3);
-    bones.push(bone4);
-    bones.push(bone5);
-    bones.push(bone6);
-    bones.push(bone7);
-    bones.push(bone8);
-    bones.push(bone9);
-    bones.push(bone10);
-    bones.push(bone11);
-    bones.push(bone12);
-    bones.push(bone13);
-    bones.push(bone14);
-    bones.push(bone15);
-
-
-    // 3. 创建蒙皮材质Material
-    let material = new THREE.MeshPhongMaterial({
-        // skinning: true,
-        color: 0x156289,
-        emissive: 0x072534,
-        side: THREE.DoubleSide,
-        flatShading: true,
-        opacity:0.3,
-        transparent:true
-        // wireframe: true,
-    })
-    // 4. 根据BufferGeometry和Material创建蒙皮网格SkinnedMesh
-    let mesh = new THREE.SkinnedMesh(human, material);
-
-    // 5. 根据Bone创建骨架Skeleton
-    let skeleton = new THREE.Skeleton(bones);
-    // 6. SkinnedMesh添加骨骼根节点
-    mesh.add(bones[0]);
-    // 7. SkinnedMesh绑定骨架
-    mesh.bind(skeleton);
-    console.log(material);
-
-    // 8. 添加界面交互GUI
-    guifn(mesh)
-
-    scene.add(mesh)
-
+  return geometry;
 }
 
-function guifn(mesh){
-    var bones = mesh.skeleton.bones;
-    console.log('bones',bones);
-     
-    gui.add( mesh, "pose" );
+function initBones() {
+  const segmentHeight = 8;
+  const segmentCount = 4;
+  const height = segmentHeight * segmentCount;
+  const halfHeight = height * 0.5;
 
-    gui.add(bones[1].position, "x").min(0).max(5).step(0.01).name("头移动位置").
-    onChange((value) => {
-      console.log("值被修改：", value);
-    })
-    .onFinishChange((value) => {
-      console.log("完全停下来:", value);
-    });
+  const sizing = {
+    segmentHeight: segmentHeight,
+    segmentCount: segmentCount,
+    height: height,
+    halfHeight: halfHeight,
+  };
 
-    gui.add(bones[0].rotation, "y").min(bones[0].rotation.y - Math.PI/4).max(bones[0].rotation.y + Math.PI/4).step(0.01).name("旋转bones[0]");
+  const geometry = createGeometry(sizing);
+  const bones = createBones(sizing);
+  mesh = createMesh(geometry, bones);
 
-
-gui.add(bones[0].rotation, 'y', bones[0].rotation.y - Math.PI/4, bones[0].rotation.y + Math.PI/4);
-  
-
+  mesh.scale.multiplyScalar(1);
+  scene.add(mesh);
 }
 
-export default bone
+function createBones(sizing) {
+  bones = [];
 
-  
+  let prevBone = new Bone();
+  bones.push(prevBone);
+  prevBone.position.y = -sizing.halfHeight;
+
+  for (let i = 0; i < sizing.segmentCount; i++) {
+    const bone = new Bone();
+    bone.name = "循环生成bone - " + i;
+    console.log(bones);
+    console.log(bone);
+    bone.position.y = sizing.segmentHeight;
+    bones.push(bone);
+    prevBone.add(bone);
+    prevBone = bone;
+  }
+
+  return bones;
+}
+
+function createMesh(geometry, bones) {
+  const material = new MeshPhongMaterial({
+    color: 0xeee333,
+    emissive: 0x072534,
+    side: DoubleSide,
+    flatShading: true,
+    wireframe: true,
+  });
+
+  const mesh = new SkinnedMesh(geometry, material);
+  const skeleton = new Skeleton(bones);
+
+  mesh.add(bones[0]);
+  console.log("mesh", mesh);
+  console.log(bones);
+
+  mesh.bind(skeleton);
+
+  skeletonHelper = new SkeletonHelper(mesh);
+  skeletonHelper.material.linewidth = 2;
+  scene.add(skeletonHelper);
+
+  return mesh;
+}
+
+function setupDatGui() {
+  let gui = new GUI();
+  let folder = gui.addFolder("General Options");
+
+  folder.add(state, "animateBones");
+
+  console.log(folder);
+  folder.controllers[0].name("Animate Bones");
+
+  folder.add(mesh, "pose");
+  folder.controllers[1].name(".pose()");
+
+  const bones = mesh.skeleton.bones;
+
+  for (let i = 0; i < bones.length; i++) {
+    const bone = bones[i];
+
+    folder = gui.addFolder("Bone " + i);
+
+    folder.add(bone.position, "x", -10 + bone.position.x, 10 + bone.position.x);
+    folder.add(bone.position, "y", -10 + bone.position.y, 10 + bone.position.y);
+    folder.add(bone.position, "z", -10 + bone.position.z, 10 + bone.position.z);
+
+    folder.add(bone.rotation, "x", -Math.PI * 0.5, Math.PI * 0.5);
+    folder.add(bone.rotation, "y", -Math.PI * 0.5, Math.PI * 0.5);
+    folder.add(bone.rotation, "z", -Math.PI * 0.5, Math.PI * 0.5);
+
+    folder.add(bone.scale, "x", 0, 2);
+    folder.add(bone.scale, "y", 0, 2);
+    folder.add(bone.scale, "z", 0, 2);
+
+    folder.controllers[0].name("position.x");
+    folder.controllers[1].name("position.y");
+    folder.controllers[2].name("position.z");
+
+    folder.controllers[3].name("rotation.x");
+    folder.controllers[4].name("rotation.y");
+    folder.controllers[5].name("rotation.z");
+
+    folder.controllers[6].name("scale.x");
+    folder.controllers[7].name("scale.y");
+    folder.controllers[8].name("scale.z");
+  }
+}
+function bone() {
+  initBones();
+  setupDatGui();
+}
+
+export default bone;
