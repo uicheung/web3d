@@ -16,4 +16,5 @@ window.addEventListener("resize", () => {
     renderer.setPixelRatio(window.devicePixelRatio);
   });
 
+  
 export default renderer

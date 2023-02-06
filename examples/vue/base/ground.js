@@ -3,7 +3,7 @@ import scene from "./scene";
 
 const mesh = new THREE.Mesh(
   new THREE.PlaneGeometry(2000, 2000),
-  new THREE.MeshPhongMaterial({ color: 0x999999, depthWrite: false })
+  new THREE.MeshPhongMaterial({ color: 0x999999, depthWrite: false ,transparent : true,opacity : 0.4})
 );
 mesh.rotation.x = -Math.PI / 2;
 scene.add(mesh);

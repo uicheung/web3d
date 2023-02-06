@@ -19,11 +19,9 @@ scene.add(axesHelper)
 import './ground'
 
 
-window.addEventListener('resize',()=>{
 
-})
-
-export default function initRender(sceneBox){
+export default function initRender(sceneBox,showGround){
     sceneBox.value.appendChild(renderer.domElement)
+    scene.scene
     animate()
 }

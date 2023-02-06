@@ -6,14 +6,12 @@ import controls from './controls'
 import  scene from './scene'
 
 const clock = new THREE.Clock()
-function animate (t){
-
+function animate (){
+    // console.log('animate');
     controls.update()
     const time = clock.getElapsedTime()
     requestAnimationFrame(animate)
     renderer.render(scene,camera)
 
 }
-
-
 export default animate
